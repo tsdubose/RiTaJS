@@ -1,173 +1,179 @@
-[![Build Status](https://travis-ci.org/dhowe/RiTaJS.svg?branch=master)](https://travis-ci.org/dhowe/RiTaJS) <a href="http://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/badge/license-GPL-orange.svg" alt="npm version"></a> <a href="https://www.npmjs.com/package/rita"><img src="https://img.shields.io/npm/v/rita.svg" alt="npm version"></a> [![CDNJS](https://img.shields.io/cdnjs/v/rita.svg)](https://cdnjs.com/libraries/rita/)
+[![Build Status](https://travis-ci.org/dhowe/RiTa.svg?branch=master)](https://travis-ci.org/dhowe/RiTa) <a href="http://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/badge/license-GPL-orange.svg" alt="gpl license"></a> <a href="https://www.npmjs.com/package/rita"><img src="https://img.shields.io/npm/v/rita.svg" alt="npm version"></a>[![Gitter](https://badges.gitter.im/dhowe/rita.svg)](https://gitter.im/dhowe/rita)&nbsp;
 
-### RiTa.js: a generative language toolkit for JavaScript
 
-<a href="https://rednoise.org/rita"><img height=80 src="https://rednoise.org/rita/img/RiTa-logo3.png"/></a>
+### RiTa: the generative language toolkit
 
-#### [The RiTa website](http://rednoise.org/rita)
+<a href="https://rednoise.org/rita/"><img height=80 src="https://rednoise.org/rita/img/RiTa-logo3.png"/></a>
 
-RiTa.js is designed to an easy-to-use toolkit for experiments in natural language and generative literature, based on the [original RiTa](http://rednoise.org/rita) library for Java. RiTa.js works alone or in conjunction with p5.js, processing.js, node/npm, or browserify.  All RiTa and RiTa.js tools are free/libre/open-source according to the [GPL](http://www.gnu.org/licenses/gpl.txt).
+#### <a href="https://rednoise.org/rita">The RiTa website</a>
 
+RiTa is designed to be an easy-to-use toolkit for experiments in natural language and generative literature. It is implemented in Java and JavaScript (with a unified API for both) and optionally integrates with Processing, Android, Node, p5.js, Browserify, Bower, etc, It is free/libre and open-source via the GPL license (http://www.gnu.org/licenses/gpl.txt).
+
+Please see https://github.com/dhowe/RiTaJS for the JavaScript implementation of RiTa.  
 
 #### About the project
 --------
-* Author:           [Daniel C. Howe](https://rednoise.org/daniel)
-* Web Site:         https://rednoise.org/rita
-* Reference:        http://www.rednoise.org/rita/reference/
-* License:          GPL (see included [LICENSE](https://github.com/dhowe/RiTaJS/blob/master/LICENSE) file)
-* Github Repo:      https://github.com/dhowe/RiTaJS/
-* Issues:      https://github.com/dhowe/RiTa/issues
-* FAQ: https://github.com/dhowe/RiTa/wiki
-* Related:          [RiTa](https://github.com/dhowe/RiTa) (Java)
-
+* Author:         [Daniel C. Howe](https://rednoise.org/~dhowe)
+* License:			  GPLv3 (see included [LICENSE](https://github.com/dhowe/RiTa/blob/master/LICENSE) file)
+* Web Site:       https://rednoise.org/rita
+* Reference:      https://rednoise.org/rita/reference
+* Github Repo:    https://github.com/dhowe/RiTa/
+* Issues:    https://github.com/dhowe/RiTa/issues
+* FAQ:    https://github.com/dhowe/RiTa/wiki
+* Related:			  [RiTaJS](https://github.com/dhowe/RiTaJS)
 
 &nbsp;
 
 
-#### A simple sketch
+#### A Simple Example (Java)
 --------
-Create a new file on your desktop called 'test.html' and download the latest rita.js from [here](http://rednoise.org/rita/download/rita.min.js), add the following lines, save and drag it into a browser:
 
-```html
-<html>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script src="./rita.min.js"></script>
-  <script>
-    window.onload = function() {
-      $('#content').text(RiTa.tokenize("The elephant took a bite!"));
-    };
-  </script>
-  <div id="content" width=200 height=200></div>
-<html>
-```
+1. Create a new Java project in Eclipse (or your IDE of choice)
+2. Download [rita.jar](http://rednoise.org/rita/download/rita.jar) and add it to the build path for the project. In eclipse: 'Project' > 'Properties' > 'Java Build Path' > 'Libraries' > 'Add External JARs...'
+3. Create and run a new class, SimpleExample.java, with the following code:
+```Java
+import rita.*;
 
-#### With [node.js](http://nodejs.org/) and [npm](https://www.npmjs.com/)
---------
-To install: `$ npm install rita`
+public class SimpleExample {
 
-```javascript
-var rita = require('rita');
-var rs = rita.RiString("The elephant took a bite!");
-console.log(rs.features());
-```
+  public static void main(String[] args) {
 
-#### With [p5.js](http://p5js.org/)
---------
-Create a new file on your desktop called 'test.html' and download the latest rita.js from [here](http://rednoise.org/rita/download/rita.min.js), add the following lines, save and drag it into a browser:
-
-```html
-<html>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.3/p5.min.js"></script>
-  <script src="./rita.min.js"></script>
-  <script>
-  function setup() {
-
-    createCanvas(200,200);
-    background(50);
-    textSize(20);
-    noStroke();
-
-    var words = RiTa.tokenize("The elephant took a bite!")
-    for (var i=0, j = words.length; i<j; i++) {
-        text(words[i], 50, 50 + i*20);
-    }
+    RiString rs = new RiString("The elephant took a bite!");
+    System.out.println(rs.features());
   }
-  </script>
-</html>
+}
 ```
 
-
-#### With [browserify](http://browserify.org/) and [npm](https://www.npmjs.com/)
+#### In Processing
 --------
-Install [browserify](https://www.npmjs.com/package/browserify) (if you haven't already)
-```
-$ sudo npm install -g browserify
-```
-Create a file called 'main.js' with the following code:
+To install:
+
+1. Open Processing and select 'Sketch' menu > 'Import Library...' > 'Add Library...'
+2. Search for 'RiTa' and then install it
+
+Create an example sketch as follows (and/or see the included examples):
 ```java
-require('rita');
+import rita.*;
+import java.util.*;
 
-var rs = RiString("The elephant took a bite!");
-console.log(rs.features());
-```
-Now install RiTa
-```
-$ npm install rita
-```
-Now use browserify to pack all the required modules into bundle.js
-```
-$ browserify main.js -o bundle.js
-```
-Create create a file called 'test.html' with a single script tag as below, then open it in a web browser and check the output in the 'Web Console'
-```html
-<script src="bundle.js"></script>
+void setup() {
+
+  size(600, 200);
+  background(50);
+  textSize(20);
+  noStroke();
+
+  RiString rs = new RiString("The elephant took a bite!");
+  Map data = rs.features();
+
+  float y = 15;
+  for (Iterator it = data.keySet().iterator(); it.hasNext();) {
+    String key = (String) it.next();
+    text(key + ": " + data.get(key), 25, y += 26);
+  }
+}
 ```
 
-#### With [processing.js](http://processingjs.org)
+#### In Processing (Android-mode)
 --------
-Create a new file on your desktop called 'test.html' and download the latest rita.js from [here](http://rednoise.org/rita/download/rita.min.js), add the following lines, save and drag it into a browser:
+1. If RiTa library is not installed, open Processing and select 'Sketch' menu > 'Import Library...' > 'Add Library...'
+2. Search for 'RiTa' and then install it
+3. Follow these [instructions](https://github.com/processing/processing-android/wiki#android-mode) to setup your environment, OR follow steps 4-6 below
+4. Switch to Android mode in Processing 3.x on PC or Mac by clicking the 'Java' button on the upper-right of the UI, then select 'Add Mode...'
+5. Select 'Android Mode' from 'Contribution Manager' window and then install it and the required Android SDK when prompted
+6. Restart Processing and input the example sketch below
+7. Switch to 'Android' mode by clicking the 'Java' button
+8. Connect your Android device to your PC via a USB cable
+9. On your Android device, go to ‘Settings’ - ‘About phone’ and tap on ‘Build number’ for five times to become a developer
+10.Go back to ‘Settings’, go to ‘Developer options’ and switch on ‘USB debugging'
+11. Run the example sketch
 
-```html
-<html>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
-  <script src="./rita.min.js"></script>
-  <script type="text/processing" data-processing-target="processing-canvas">
-    void setup() {
+An example sketch:
+```java
+import rita.*;
+import java.util.*;
 
-      size(200,200);
-      background(50);
-      textSize(20);
-      noStroke();
+void setup() {
 
-      String words = RiTa.tokenize("The elephant took a bite!");
-      for (int i=0, j = words.length; i<j; i++) {
-          text(words[i], 50, 50 + i*20);
-      }
-    }
-  </script>
-  <canvas id="processing-canvas"> </canvas>
-</html>
+  size(600, 200);
+  background(50);
+  textSize(20);
+  noStroke();
+
+  RiString rs = new RiString("The elephant took a bite!");
+  Map data = rs.features();
+
+  float y = 15;
+  for (Iterator it = data.keySet().iterator(); it.hasNext();) {
+    String key = (String) it.next();
+    text(key + ": " + data.get(key), 25, y += 26);
+  }
+}
 ```
 
+<!--
+#### With Maven
+--------
+##### Setting up Rita for Maven in Eclipse from GitHub
+1. Install [Eclipse IDE for Java Developers](https://eclipse.org/downloads/) 4.3 or newer
+2. In Eclipse, select File > Import... > Projects from Git > Clone URI > https://github.com/dhowe/RiTa.git (or the address of your fork)
+3. Right-click: RiTa project > Configure > Convert to Maven Project
+-->
+
+<br/>
 
 #### Can I contribute?
 --------
-Please! We are looking for more coders to help out... Just press *Fork* at the top of this github page and get started, or follow the instructions below...
+Please! We are looking for more coders to help out... Just press *Fork* at the top of this page and get started, or follow the instructions below...
 
+If you don't feel like coding but still want to contribute, please send a twitter message to @RiTaSoftware.
 
-#### Development Setup
+<!--
+#### Development Setup (in Eclipse Maven)
 --------
-1. Download and install [git](https://www.git-scm.com/), [npm](https://www.npmjs.org/), and [gulp](). If you have them already, move on to step #2.
 
-    a. You can find a version of __git__ for your OS [here](https://www.git-scm.com/)  
-    b. The easiest way to install __npm__ is to install [node.js](http://nodejs.org/)  
-    c. You can install __gulp__ via npm as follows:
+1. in Eclipse > Package Explorer, right click on pom.xml from the project
+2. select > 'Run As' > '5 Maven Install'
+-->
 
-    ```bash
-    $ npm install -g gulp
-    ```
-  
-2. [Fork and clone](https://help.github.com/articles/fork-a-repo) this library.
 
-    a. First, login to github and fork the project  
-    b. Then, from a terminal/shell:
+<br/>
 
-    ```bash
-    $ git clone https://github.com/dhowe/RiTaJS.git
-    ```
-3. Now navigate into the project folder and install dependencies via npm.
+#### Development Setup (in Eclipse)
+--------
 
-    ```bash
-    $  cd RiTaJS && npm install
-    ```
-4. To create the library from src, use gulp.
+1. Download and install [Eclipse for Java.](https://www.eclipse.org/downloads/)
 
-    ```bash
-    $ gulp build
-    ```
-5. Run all tests (in phantomJS) with gulp.
+2. In the Eclipse menu, select 'File' > 'Import...'
 
-    ```bash
-    $ gulp test
-    ```
-6. Work on an existing [issue](https://github.com/dhowe/RiTa/issues?q=is%3Aopen+is%3Aissue+label%3ARiTaJS), then [submit a pull request...](https://help.github.com/articles/creating-a-pull-request)
+3. In the 'Import Window' select 'Git' > 'Projects from Git', then press Next.
+
+4. Select 'Clone URI' > then Next and copy and paste the 'HTTPS clone URL'     [https://github.com/dhowe/RiTa.git](https://github.com/dhowe/RiTa.git)  from RiTa's Github page into the URI field.
+
+5. Press Next to proceed with the default master branch or (optionally) configure the project directory.
+
+6. Press Next and select 'Import existing projects' to finish.
+
+7. Right click on 'pom.xml' from RiTa root directory in Package Explorer panel in Eclipse and select 'Run as' > 'Maven install'.
+
+8. To run the tests:
+
+    a. Navigate to the RiTa/resources directory and right-click on 'build.xml'
+
+    b. Select 'Run as' > 'Ant Build' to compile and run the tests in JUnit.
+
+9. To build the project:
+
+    a. In the Eclipse menu, select 'Window' > 'Show View' -> 'Ant
+
+    b. Click the 'Add buildfile' button to add a buildfile in the newly added Ant panel, and navigate to RiTa/resources/build.xml
+
+    c. Click to expand the 'RiTa' menu and reveal the various tasks, then double-click 'build' (or run ```$ cd RiTa/resources && ant build``` from the terminal)
+
+    d. (Optional) if you are on Windows, you can use [cygwin](http://cygwin.com/install.html), by installing [ant](http://dita-ot.sourceforge.net/doc/ot-userguide13/xhtml/installing/windows_installingant.html) and using it to run the command ```$ cd RiTa/resources && ant build```.
+
+    e. When the build is complete, project resources can be found in RiTa/dist
+
+10. Work on an existing [issue](https://github.com/dhowe/RiTa/issues?q=is%3Aopen+is%3Aissue), then [submit a pull request...](https://help.github.com/articles/creating-a-pull-request)
+
+11. (Optional) If you encounter error ```java.lang.UnsupportedClassVersionError: org/apache/maven/cli/MavenCli : Unsupported major.minor version```, follow [these instructions](http://crunchify.com/how-to-install-maven-on-mac-os-x-manually-fix-unsupportedclassversionerror-orgapachemavenclimavencli/) to install Maven manually.

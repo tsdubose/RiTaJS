@@ -1,0 +1,2 @@
+core.jar: 3.3.2
+junit.jar: 4.10

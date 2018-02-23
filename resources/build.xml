@@ -1,0 +1,483 @@
+<!-- NOTE: For a full build, run ./publish-lib.sh  -->
+
+<!-- NOTE: ant should be run with java version 1.7 -->
+		
+<project name="RiTa" default="test" basedir="../">
+
+	<!-- ===================== properties ===================== -->
+
+	<property file="resources/build.properties" />
+
+	<!-- the optional location of the RiTaJS project -->
+	<property name="project.js" location="${basedir}/js" />
+
+	<property name="project.src" location="${basedir}/java" />
+	<property name="project.bin" location="${basedir}/target/classes" />
+	<property name="project.dist" location="${basedir}/dist" />
+	<property name="java.examples" location="${basedir}/examples/processing" />
+	<property name="project.lib" location="${basedir}/lib/java" />
+	<property name="project.web" location="${basedir}/web" />
+	<property name="project.resources" location="${basedir}/resources" />
+	<property name="project.archive" location="${basedir}/../rita-archive" />
+
+	<property name="props.src" location="${project.resources}/library.properties" />
+	<property name="props.dst" location="${project.dist}/${project.name}/library.properties" />
+	<property name="web.examples" location="${project.web}/examples" />
+	<property name="project.reference" location="${project.web}/reference" />
+	<property name="project.download" location="${project.web}/download" />
+
+	<property name="dist.bin" location="${project.dist}/bin" />
+	<property name="dist.library" location="${project.dist}/${project.name}/library" />
+	<property name="dist.js" location="${project.dist}/${project.name}/js" />
+
+	<property name="p5.sketchbook" location="${user.home}/Documents/Processing" />
+	<property name="p5.libraries" location="${p5.sketchbook}/libraries/" />
+	<property name="p5.rita.jar" location="${p5.libraries}/RiTa/library/rita.jar" />
+	<property name="p5.rita.support.jar" location="${p5.libraries}/RiTa/library/rita.support.jar" />
+
+	<!-- ======================================================= -->
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="./resources/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<path id="classpath">
+		<fileset dir="${project.lib}" includes="**/*.jar" excludes="" />
+	</path>
+
+	<!-- ================= optional js-stuff ================== -->
+
+	<property name="js.src" location="${project.js}/src" />
+	<property name="js.dist" location="${project.js}/dist" />
+	<property name="rita.js" location="${project.js}/dist/rita.js" />
+	<property name="path.to.gulp" value="/usr/local/bin/gulp" />
+	<property name="js.examples" location="${project.js}/examples" />
+
+	<target name="check.js">
+
+		<available file="${rita.js}" property="rita.js.present" />
+		<echo message="Checking for rita.js..." />
+		<if>
+			<isset property="rita.js.present" />
+			<then>
+				<echo>"RiTaJS found..."</echo>
+			</then>
+			<else>
+				<echo message="No RiTaJS available..." />
+			</else>
+		</if>
+	</target>
+	
+	<target name="check.processing">
+
+		<available file="${p5.libraries}/RiTa/library" property="processing.present" />
+		<echo message="Checking for processing sketchbook..." />
+		<if>
+			<isset property="processing.present" />
+			<then>
+				<echo>"Processing (with RiTa-lib) found..."</echo>
+			</then>
+			<else>
+				<echo message="No Processing (with RiTa-lib) found..." />
+			</else>
+		</if>
+	</target>
+
+	<target name="include.js" depends="check.js">
+		<if>
+			<isset property="rita.js.present" />
+			<then>
+				<echo message="Copying js files ..." />
+
+				<!-- 4 dist files (and dict) to dist for linking from web -->
+				<copy todir="${project.dist}">
+					<fileset dir="${js.dist}">
+						<include name="*.js" />
+					</fileset>
+				</copy>
+				<copy file="${js.src}/rita_dict.js" tofile="${project.dist}/rita_dict.js" />
+				<copy file="${js.src}/rita_dict_1000.js" tofile="${project.dist}/rita_dict_1000.js" />
+
+
+				<!-- 4 dist files to be zipped into js in complete-download -->
+				<copy todir="${dist.js}">
+					<fileset dir="${js.dist}">
+						<include name="*.js" />
+					</fileset>
+				</copy>
+
+				<!-- 1 js file to be zipped into library in complete-download -->
+				<copy file="${dist.js}/rita-full.min.js" tofile="${dist.library}/rita.js" />
+
+				<!-- js examples (p5js and dom) to web folder -->
+			  <copy todir="${web.examples}">
+			    <fileset dir="${js.examples}"/>
+			  </copy>
+			</then>
+			
+			<else>
+				<echo message="Generating zip without .js files..." />
+			</else>
+		</if>
+		
+	</target>
+
+	<target name="build.js">
+		<antcall target="run.gulp">
+			<param name="gulp.task" value="make.lib" />
+		</antcall>
+	</target>
+	
+	<target name="npm.publish">
+		<antcall target="run.gulp">
+			<param name="gulp.task" value="npm.publish" />
+		</antcall>
+	</target>
+
+	<target name="test.js">
+		<antcall target="run.gulp">
+			<param name="gulp.task" value="test" />
+		</antcall>
+	</target>
+
+	<target name="run.gulp" depends="check.js">
+		<if>
+			<isset property="rita.js.present" />
+			<then>
+				<echo>"RiTaJS found..."</echo>
+				<echo message="Calling 'gulp ${gulp.task}' ..." />
+				<exec dir="${project.js}" resolveexecutable="false" executable="${path.to.gulp}" failonerror="true">
+					<arg line="${gulp.task}" />
+				</exec>
+			</then>
+			<else>
+				<echo message="No RiTaJS available..." />
+			</else>
+		</if>
+	</target>
+
+	<!-- ==================== java-tasks ===================== -->
+
+	<path id="quickdocs.classpath">
+		<fileset dir="${project.lib}" includes="**/*.jar" />
+		<pathelement path="${project.bin}" />
+		<pathelement path="${project.src}" />
+	</path>
+
+	<path id="test.classpath">
+		<fileset dir="${project.lib}" includes="**/*.jar" excludes="core.jar" />
+		<pathelement path="${dist.bin}" />
+		<pathelement path="${project.dist}/${project.name}/src" />
+	</path>
+
+	<path id="doc.classpath">
+		<fileset dir="${project.lib}" includes="**/*.jar" />
+		<pathelement path="${dist.bin}" />
+		<pathelement path="${project.dist}/${project.name}/src" />
+	</path>
+
+	<fileset id="javaExampleFileSet" dir="${java.examples}">
+		<exclude name="**/*.properties" />
+		<exclude name="**/web-export/**" />
+		<exclude name="**/POSMarkov/**" />
+	</fileset>
+	
+	<fileset id="jsExampleFileSet" dir="${js.examples}">
+		<exclude name="**/*README*" />
+		<exclude name="**/*.html" />
+		<exclude name="**/*.properties" />
+		<exclude name="**/*.xml" />
+		<exclude name="**/web-export/**" />
+		<exclude name="**/lib/**" />
+	</fileset>
+
+	<property name="line" value="-----------------------------------------------------------------------" />
+
+	<target name="compile" depends="create.structure">
+
+		<!-- Replaces version tag in RiTa.java -->
+		<replace file="${project.dist}/${project.name}/src/rita/RiTa.java" token="##version##" value="${project.version}" />
+
+		<javac srcdir="${project.dist}/${project.name}/src" excludes="**/test/sketches/**" destdir="${dist.bin}" 
+			encoding="UTF-8"
+			source="${java.target.version}" 
+			target="${java.target.version}" 
+			includeantruntime="false" 
+			debug="false">
+			<classpath refid="classpath" />
+			<compilerarg line="-Xlint:deprecation,divzero,empty,fallthrough,finally,overrides,path" compiler="modern" />
+		</javac>
+
+	</target>
+
+	<target name="make.docs" depends="compile">
+		<java classname="rita.docgen.DocGenerator" fork="true" dir="${basedir}">
+			<arg value="web/reference/" />
+			<classpath refid="doc.classpath" />
+		</java>
+	</target>
+
+	<target name="_quick.docs">
+		<!-- dev: generates reference from current target/classes -->
+		<java classname="rita.docgen.DocGenerator" fork="true" dir="${basedir}">
+			<arg value="web/reference/" />
+			<classpath refid="quickdocs.classpath" />
+		</java>
+	</target>
+
+	<target name="build" depends="test, generate.jars, make.docs">
+		<delete dir="${dist.bin}" />
+		<antcall target="generate.zip" />
+	</target>
+
+	<!-- skips tests and docs -->
+	<target name="_quick.build" depends="generate.jars">
+		<delete dir="${dist.bin}" />
+		<antcall target="generate.zip" />
+	</target>
+
+	<target name="generate.zip" depends="include.js">
+
+		<delete file="${project.web}/rita.zip" />
+		<delete file="${project.web}/RiTa-${project.version}.zip" />
+
+		<!-- create the zip -->		
+		<zip destfile="${project.web}/RiTa-${project.version}.zip" basedir="${project.dist}" excludes="**/.DS_Store, *.jar, *.zip, *.js" />
+
+		<!-- save a copy in the archive -->		
+		<copy tofile="${project.archive}/RiTa-${project.version}.zip" file="${project.web}/RiTa-${project.version}.zip" failonerror="false" overwrite="true" />
+		
+		<!-- add a symlink to rita.zip -->
+		<symlink link="${project.web}/rita.zip" resource="${project.web}/RiTa-${project.version}.zip"/>
+		
+		<delete dir="${project.dist}/${project.name}" />
+
+		<!-- copy files to the web/download dir -->
+		<copy todir="${project.download}">
+			<fileset dir="${project.dist}">
+				<include name="rita*.*" />
+			</fileset>
+		</copy>
+		
+	</target>
+
+	<target name="generate.jars" depends="compile">
+
+		<!--  copy all non-class files manually -->
+
+		<copy todir="${dist.bin}/rita/wordnet">
+			<fileset dir="${project.src}/rita/wordnet">
+				<include name="*.xml" />
+				<include name="*.txt" />
+			</fileset>
+		</copy>
+
+		<copy todir="${dist.bin}/rita">
+			<fileset dir="${project.src}/rita/">
+				<include name="*.js" />
+				<include name="*.gif" />
+			</fileset>
+		</copy>
+		<copy todir="${dist.bin}">
+			<fileset dir="${project.src}">
+				<include name="*.properties" />
+			</fileset>
+		</copy>
+
+		<!--  YAML lib for Processing -->
+		<copy file="${project.lib}/snakeyaml-1.15.jar" tofile="${project.dist}/${project.name}/library/snakeyaml-1.15.jar" />
+
+		<!-- full lib to latest -->
+		<jar jarfile="${project.dist}/rita.jar" basedir="${dist.bin}">
+			<exclude name="**/data/**" />
+			<exclude name="**/test/**" />
+			<exclude name="**/docgen/**" />
+		</jar>
+
+		<!-- rita pkg only -->
+		<jar jarfile="${project.dist}/${project.name}/library/rita.jar" basedir="${dist.bin}">
+			<include name="rita/*.*/" />
+			<include name="*.properties/" />
+			<exclude name="**/test/**" />
+		</jar>
+
+		<!-- support pkg only -->
+		<jar jarfile="${project.dist}/${project.name}/library/rita.support.jar" basedir="${dist.bin}">
+			<exclude name="data/**" />
+			<exclude name="rita/*.*/" />
+			<exclude name="*.properties/" />
+			<exclude name="**/test/**" />
+			<exclude name="**/docgen/**" />
+		</jar>
+
+		<antcall target="_jars.to.p5" />
+
+		<!--  library.properties for Processing -->
+		<copy file="${props.src}" tofile="${props.dst}" />
+		<replaceregexp file="${props.dst}" match="##version##" replace="${project.version}" flags="g" />
+		<replaceregexp file="${props.dst}" match="##versionnum##" replace="${project.version.num}" flags="g" />
+
+		<!--  library.properties as rita.txt to web, dist -->
+		<copy file="${props.dst}" tofile="${project.web}/rita.txt" />
+
+	</target>
+
+	<target name="_jars.to.p5" depends="check.processing">
+		<if>
+			<isset property="processing.present" />
+			<then>
+				<echo message="Copying jars to local p5 library ..." />
+
+				<copy todir="${p5.libraries}/${project.name}/library" >
+					<fileset dir="${project.dist}/${project.name}/library" />
+				</copy>
+			</then>
+			
+			<else>
+				<echo message="Skipping jars to p5" />
+			</else>
+		</if>
+		
+	</target>
+	
+	<target name="create.structure" description="" depends="clean">
+
+		<mkdir dir="${project.dist}" />
+		<mkdir dir="${project.dist}/${project.name}" />
+		<mkdir dir="${project.dist}/${project.name}/library" />
+		<mkdir dir="${project.dist}/${project.name}/js" />
+		<mkdir dir="${project.dist}/${project.name}/examples" />
+		<mkdir dir="${project.dist}/${project.name}/reference" />
+		<mkdir dir="${project.dist}/${project.name}/css" />
+		<mkdir dir="${project.dist}/${project.name}/src" />
+		<mkdir dir="${dist.bin}" />
+		<mkdir dir="${dist.bin}/data" />
+
+		<copy todir="${project.dist}/${project.name}/css">
+			<fileset dir="web/css/">
+				<include name="*.css" />
+			</fileset>
+		</copy>
+
+		<copy todir="${project.dist}/${project.name}/examples">
+			<fileset refid="javaExampleFileSet" />
+		</copy>
+
+		<copy todir="${project.dist}/${project.name}/src">
+			<fileset dir="${project.src}">
+				<exclude name="rita/test/sketches/**" />
+				<exclude name="**/data/**" />
+			</fileset>
+		</copy>
+
+		<copy todir="${dist.bin}/data">
+			<fileset dir="${project.src}/data" />
+		</copy>
+
+		<!--  antcall target="create.src.zip"/-->
+
+	</target>
+
+	<target name="clean" depends="info">
+
+		<delete dir="${project.dist}" />
+		<!-- delete dir="${project.docs}"/>
+		<delete dir="${project.build}"/-->
+
+	</target>
+
+	<target name="test.one" description="one" depends="info">
+
+		<junit printsummary="yes" timeout="100000" haltonfailure="yes">
+			<formatter usefile="false" type="plain" />
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+			<test name="rita.test.RiTaTest" outfile="reports/rita.test.TestOne">
+			</test>
+		</junit>
+
+	</target>
+
+	<target name="test.rhyme" description="one" depends="compile">
+
+		<junit printsummary="yes" timeout="100000" haltonfailure="yes">
+			<formatter usefile="false" type="plain" />
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+			<test name="rita.test.IsRhymeTest" outfile="reports/rita.test.TestRhyme">
+			</test>
+		</junit>
+
+	</target>
+				
+	<target name="test" description="runs all java tests" depends="compile">
+
+		<junit printsummary="yes" timeout="100000" haltonfailure="yes">
+
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+
+			<formatter usefile="false" type="plain" />
+
+			<test name="rita.test.RiTaEventTest" outfile="reports/rita.test.RiTaEventTest">
+			</test>
+			<test name="rita.test.RiStringTest" outfile="reports/rita.test.RiStringTest">
+			</test>
+			<test name="rita.test.RiTaTest" outfile="reports/rita.test.RiTaTest">
+			</test>
+			<test name="rita.test.RiLexiconTest" outfile="reports/rita.test.RiLexiconTest">
+			</test>
+			<test name="rita.test.RiGrammarTest" outfile="reports/rita.test.RiGrammarTest">
+			</test>
+			<test name="rita.test.RiMarkovTest" outfile="reports/rita.test.RiMarkovTest">
+			</test>
+		</junit>
+
+	</target>
+
+	<target name="test.wordnet" description="runs all wordnet tests" depends="info">
+
+		<junit printsummary="yes" timeout="100000" haltonfailure="yes">
+
+			<formatter usefile="false" type="plain" />
+
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+
+			<test name="rita.test.RiWordNetTest" outfile="reports/rita.test.RiWordNetTest">
+			</test>
+			<!--test name="rita.test.RiWordNetIteratorsTest"  haltonfailure="no" outfile="reports/rita.test.RiWordNetTest"></test-->
+
+		</junit>
+
+	</target>
+
+	<target name="info" depends="check.js">
+<echo>
+${line}
+Name:		    ${project.name}
+Version:		${project.version}
+Java.Version:	${java.version}
+</echo>
+		<if>
+			<isset property="rita.js.present" />
+			<then>
+<echo>JavaScript:     true
+${line}
+</echo>
+			</then>
+			<else>
+<echo>JavaScript:     false
+${line}
+</echo>			
+			</else>
+		</if>
+	</target>
+
+</project>
